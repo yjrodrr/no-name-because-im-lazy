@@ -3,21 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Attack Button</title>
+    <title>Simple Battle Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        #main-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #arena {
+            width: 300px;
+            height: 300px;
+            border: 2px solid black;
+            position: relative;
+            background-color: white;
+        }
+
+        #player-ball {
+            width: 50px;
+            height: 50px;
+            background-color: blue;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+        }
+
+        #enemy-square {
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        #battle-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #battle-enemy {
+            width: 100px;
+            height: 100px;
+            background-color: red;
+            margin: 20px 0;
+        }
+
+        #hp-display {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        #attack-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #attack-button:hover {
+            background-color: darkgreen;
+        }
+    </style>
 </head>
 <body>
-    <h1>Random Attack Roll</h1>
-    <button id="attackButton">Attack</button>
-    <p id="result">Result: -</p>
+
+    <div id="main-screen">
+        <h1>Main Arena</h1>
+        <div id="arena">
+            <div id="player-ball"></div>
+            <div id="enemy-square" onclick="startBattle()"></div>
+        </div>
+    </div>
+
+    <div id="battle-screen">
+        <div id="hp-display">HP: 20/20</div>
+        <div id="battle-enemy"></div>
+        <button id="attack-button" onclick="attackEnemy()">Attack</button>
+    </div>
 
     <script>
-        const button = document.getElementById('attackButton');
-        const result = document.getElementById('result');
+        let enemyHP = 20;
+        let maxHP = 20;
+        let enemyDefeated = false;
 
-        button.addEventListener('click', () => {
-            const randomNumber = Math.floor(Math.random() * 20) + 1;
-            result.textContent = `Result: ${randomNumber}`;
-        });
+        function startBattle() {
+            if (!enemyDefeated) {
+                document.getElementById('main-screen').style.display = 'none';
+                document.getElementById('battle-screen').style.display = 'flex';
+                updateHP();
+            }
+        }
+
+        function attackEnemy() {
+            if (enemyHP > 0) {
+                const damage = Math.floor(Math.random() * 20) + 1; // Random damage from 1 to 20
+                enemyHP -= damage;
+                if (enemyHP < 0) enemyHP = 0;
+                updateHP();
+
+                if (enemyHP <= 0) {
+                    enemyDefeated = true;
+                    setTimeout(endBattle, 1000); // Delay to show 0 HP before returning
+                }
+            }
+        }
+
+        function updateHP() {
+            document.getElementById('hp-display').textContent = `HP: ${enemyHP}/${maxHP}`;
+        }
+
+        function endBattle() {
+            document.getElementById('battle-screen').style.display = 'none';
+            document.getElementById('main-screen').style.display = 'flex';
+            document.getElementById('enemy-square').style.display = 'none'; // Remove enemy from arena
+        }
     </script>
+
 </body>
 </html>
