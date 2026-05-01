@@ -52,6 +52,7 @@
       display: inline-block;
       min-width: 1.2em;
       text-align: center;
+      transform: rotate(180deg);
     }
 
     .title .suffix {
@@ -93,7 +94,7 @@
 
   <script>
 
-    const encoded  = [12, 15, 24, 6, 18].reverse().map(n => n - 3);
+    const encoded = [12, 15, 24, 6, 18].reverse();
     const suffix   = "|c";
     const CHARS    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
     const SCRAMBLE_DURATION = 900;
