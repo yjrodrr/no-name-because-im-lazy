@@ -1,140 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Battle Game</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oculi +b</title>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        #main-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    html, body {
+      height: 100%;
+      background: #080808;
+      color: #e8e8e0;
+      font-family: 'Courier Prime', monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
 
-        #arena {
-            width: 300px;
-            height: 300px;
-            border: 2px solid black;
-            position: relative;
-            background-color: white;
-        }
+    .center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 48px;
+      animation: fadeIn 1s ease both;
+    }
 
-        #player-ball {
-            width: 50px;
-            height: 50px;
-            background-color: blue;
-            border-radius: 50%;
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-        }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
-        #enemy-square {
-            width: 50px;
-            height: 50px;
-            background-color: red;
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            cursor: pointer;
-        }
+    .title {
+      font-family: 'Courier Prime', monospace;
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: #e8e8e0;
+      display: flex;
+      align-items: baseline;
+      white-space: nowrap;
+    }
 
-        #battle-screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-        }
+    .title span {
+      display: inline-block;
+      min-width: 0.6em;
+      text-align: center;
+    }
 
-        #battle-enemy {
-            width: 100px;
-            height: 100px;
-            background-color: red;
-            margin: 20px 0;
-        }
+    .title .suffix {
+      margin-left: 0.22em;
+    }
 
-        #hp-display {
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
+    input[type="text"] {
+      background: transparent;
+      border: 1px solid #444;
+      border-radius: 10px;
+      outline: none;
+      color: #e8e8e0;
+      font-family: 'Courier Prime', monospace;
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-align: center;
+      width: clamp(180px, 32vw, 300px);
+      padding: 14px 20px;
+      caret-color: #e8e8e0;
+      transition: border-color 0.3s;
+    }
 
-        #attack-button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: green;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
+    input[type="text"]:focus {
+      border-color: #888;
+    }
 
-        #attack-button:hover {
-            background-color: darkgreen;
-        }
-    </style>
+    input[type="text"]::placeholder {
+      color: #333;
+      letter-spacing: 0.1em;
+    }
+  </style>
 </head>
 <body>
+  <div class="center">
+    <div class="title" id="title"></div>
+    <input type="text" id="answer" placeholder="odpowiedź" autocomplete="off" spellcheck="false" />
+  </div>
 
-    <div id="main-screen">
-        <h1>Main Arena</h1>
-        <div id="arena">
-            <div id="player-ball"></div>
-            <div id="enemy-square" onclick="startBattle()"></div>
-        </div>
-    </div>
+  <script>
 
-    <div id="battle-screen">
-        <div id="hp-display">HP: 50/50</div>
-        <div id="battle-enemy"></div>
-        <button id="attack-button" onclick="attackEnemy()">Attack</button>
-    </div>
+    const encoded  = [13, 1, 19, 10, 7];
+    const suffix   = "+b";
+    const CHARS    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    const SCRAMBLE_DURATION = 900;
+    const FRAME_INTERVAL    = 55;
+    const STAGGER           = 200;
 
-    <script>
-        let enemyHP = 50;
-        let maxHP = 50;
-        let enemyDefeated = false;
+    const titleEl = document.getElementById("title");
+    const spans   = [];
 
-        function startBattle() {
-            if (!enemyDefeated) {
-                document.getElementById('main-screen').style.display = 'none';
-                document.getElementById('battle-screen').style.display = 'flex';
-                updateHP();
-            }
-        }
+    encoded.forEach(num => {
+      const span = document.createElement("span");
+      span.textContent = randomChar(String(num).length);
+      titleEl.appendChild(span);
+      spans.push({ span, target: String(num) });
+    });
 
-        function attackEnemy() {
-            if (enemyHP > 0) {
-                const damage = Math.floor(Math.random() * 20) + 1; // Random damage from 1 to 20
-                enemyHP -= damage;
-                if (enemyHP < 0) enemyHP = 0;
-                updateHP();
+    const suffixSpan = document.createElement("span");
+    suffixSpan.className = "suffix";
+    suffixSpan.textContent = randomChar(suffix.length);
+    titleEl.appendChild(suffixSpan);
+    spans.push({ span: suffixSpan, target: suffix });
 
-                if (enemyHP <= 0) {
-                    enemyDefeated = true;
-                    setTimeout(endBattle, 1000); // Delay to show 0 HP before returning
-                }
-            }
-        }
+    function randomChar(len) {
+      let r = "";
+      for (let i = 0; i < len; i++) {
+        r += CHARS[Math.floor(Math.random() * CHARS.length)];
+      }
+      return r;
+    }
 
-        function updateHP() {
-            document.getElementById('hp-display').textContent = `HP: ${enemyHP}/${maxHP}`;
-        }
+    function scrambleResolve(span, target, delay) {
+      let elapsed = 0;
+      setTimeout(() => {
+        const timer = setInterval(() => {
+          elapsed += FRAME_INTERVAL;
+          if (elapsed >= SCRAMBLE_DURATION) {
+            clearInterval(timer);
+            span.textContent = target;
+          } else {
+            span.textContent = randomChar(target.length);
+          }
+        }, FRAME_INTERVAL);
+      }, delay);
+    }
 
-        function endBattle() {
-            document.getElementById('battle-screen').style.display = 'none';
-            document.getElementById('main-screen').style.display = 'flex';
-            document.getElementById('enemy-square').style.display = 'none'; // Remove enemy from arena
-        }
-    </script>
+    spans.forEach(({ span, target }, i) => {
+      scrambleResolve(span, target, i * STAGGER);
+    });
+      
+    const input = document.getElementById("answer");
 
+    input.addEventListener("input", () => {
+      input.value = input.value.replace(/[^a-zA-Z]/g, "");
+    });
+
+    input.addEventListener("keydown", e => {
+      if (
+        !/^[a-zA-Z]$/.test(e.key) &&
+        !["Backspace","Delete","ArrowLeft","ArrowRight","Tab","Enter"].includes(e.key)
+      ) {
+        e.preventDefault();
+      }
+    });
+  </script>
 </body>
 </html>
