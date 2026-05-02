@@ -156,8 +156,16 @@
         !["Backspace","Delete","ArrowLeft","ArrowRight","Tab","Enter"].includes(e.key)
       ) {
         e.preventDefault();
+        const ANSWER = 'tutwpiszoddpowiedz';
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (input.value.toLowerCase() === ANSWER) {
+      sessionStorage.setItem('puzzle1_solved', 'true');
+      window.location.href = 'puzzle2.html';
       }
-    });
+    }
+  });
   </script>
 </body>
 </html>
